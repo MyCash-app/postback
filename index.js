@@ -1,43 +1,21 @@
 const express = require('express');
-const admin = require('firebase-admin');
 const app = express();
 const port = process.env.PORT || 3000;
 
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  }),
-  databaseURL: process.env.FIREBASE_DATABASE_URL,
-});
+// Route to handle postback
+app.get('/postback', (req, res) => {
+    const userId = req.query.user_id;
+    const reward = req.query.reward;
 
-app.get('/postback', async (req, res) => {
-  const userId = req.query.user_id;
-  const rewardAmount = parseInt(req.query.reward) || 0;
+    if (!userId || !reward) {
+        return res.status(400).send('Missing parameters');
+    }
 
-  if (!userId || rewardAmount <= 0) {
-    return res.status(400).send('Invalid parameters');
-  }
+    console.log(`Received postback for user ${userId} with reward ${reward}`);
 
-  try {
-    const db = admin.database();
-    const userRef = db.ref(`users/${userId}/points`);
-    const snapshot = await userRef.once('value');
-    const currentPoints = snapshot.val() || 0;
-
-    await userRef.set(currentPoints + rewardAmount);
-    res.status(200).send('OK');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/', (req, res) => {
-  res.send('Postback Server is Running!');
+    res.send('Postback received');
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
