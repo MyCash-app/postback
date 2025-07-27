@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: postback
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
