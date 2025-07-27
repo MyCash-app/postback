@@ -5,6 +5,7 @@ const port = process.env.PORT || 3000;
 const { initializeApp } = require('firebase/app');
 const { getDatabase, ref, get, update } = require('firebase/database');
 
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAOUtJECbGrjuF1VnEebZWPfoE0iUGDOO0",
   authDomain: "tapy-9914d.firebaseapp.com",
@@ -15,15 +16,27 @@ const firebaseConfig = {
   appId: "1:334256084172:web:fee43356d76a985f539e69"
 };
 
+// Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
+
+// Secret Token (for securing Postbacks)
+const SECRET_TOKEN = "nailiaymen505050";
 
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id;
     const reward = parseInt(req.query.reward);
+    const token = req.query.token;
 
-    if (!userId || !reward) {
+    // Validate required parameters
+    if (!userId || !reward || !token) {
         return res.status(400).send('Missing parameters');
+    }
+
+    // Validate Secret Token
+    if (token !== SECRET_TOKEN) {
+        console.log(`Invalid token attempt: ${token}`);
+        return res.status(403).send('Forbidden: Invalid Token');
     }
 
     console.log(`Received postback for user ${userId} with reward ${reward}`);
